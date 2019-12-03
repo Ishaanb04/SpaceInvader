@@ -4,7 +4,7 @@ import time
 
 
 class Enemy(Charecter):
-    def __init__(self, image, pos_x, pos_y, velocity = 0.5):
+    def __init__(self, image, pos_x, pos_y, velocity=1):
         super().__init__(image, pos_x, pos_y)
         self._velocity = velocity
 
