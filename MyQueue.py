@@ -39,7 +39,7 @@ class Queues:
         self._head = None
         self._tail = None
         self._limit = limit
-        self._size = 0
+        self._size = 1
 
     def __repr__(self):
         representation = '['
@@ -72,7 +72,7 @@ class Queues:
         return self._limit
 
     def is_allowed(self):
-        return self.get_size() < self.get_limit()
+        return self.get_size() <= self.get_limit()
 
     def get_size(self):
         return self._size
@@ -82,6 +82,22 @@ class Queues:
 
     def decrease_size(self):
         self._size -= 1
+
+    def remove_data(self, data):
+        if self.get_head() is Node:
+            print('queue is empty')
+            return None
+        elif self.get_head().get_next() is None and self.get_head().get_data() is data:
+            self.set_head(None)
+        else:
+            curr = self.get_head()
+            while curr.get_next() is not None:
+                if curr.get_data() is data:
+                    curr.set_next(curr.get_next().get_next())
+                    break
+                curr.set_next(curr.get_next())
+            if curr.get_data() is data:
+                curr.set_next(None)
 
     def enqueue(self, data):
         new_node = Node(data)

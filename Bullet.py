@@ -11,7 +11,7 @@ def decrease_bullit():
 class Bullet:
     bullit_count = 1
 
-    def __init__(self, pos_x, pos_y, velocity=5):
+    def __init__(self, pos_x, pos_y, velocity=1):
         self._pos_x = pos_x
         self._pos_y = pos_y
         self._size = 40

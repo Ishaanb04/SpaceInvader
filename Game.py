@@ -70,6 +70,7 @@ class MainGame:
     def display_enemy(self):
         if self.get_enemy():
             for en in self.get_enemy():
+                en.move_down()
                 en.create_enemy(self.get_screen())
 
     def get_screen_width(self):
@@ -97,30 +98,30 @@ class MainGame:
         pygame.display.set_icon(icon)
         return screen
 
-    def bullet_move(self, bullet, player):
-        collision = False
-        loc = None
-        while bullet.get_pos_y() + bullet.get_size() >= 0:
-            for en in self.get_enemy():
-                if en.get_pos_x() <= bullet.get_pos_x() + bullet.get_size() // 2 <= en.get_pos_x() + en.get_width() and en.get_pos_y() + en.get_height() >= bullet.get_pos_y():
-                    print(
-                        f'Enemy y: {en.get_pos_y() + en.get_height()}, Enemy_x: {en.get_pos_x()} and {en.get_pos_x() + en.get_width()}. Bull_y: {bullet.get_pos_y()} , Bull_x: {bullet.get_pos_x()}')
-                    collision = True
-                    loc = [en.get_pos_x(), en.get_pos_y()]
-                    break
-            if collision:
-                player.get_bullets().dequeue()
-                self.dec_bullet_count()
-                self.inc_score()
-                self.respawn(loc[0], loc[1])
-                time.sleep(1)
-                break
-            time.sleep(0.002)
-            bullet.move_up()
-            bullet.draw_bullet(self.get_screen(), bullet.get_pos_x(), bullet.get_pos_y())
+    # def bullet_move(self, bullet, player):
+    #     collision = False
+    #     loc = None
+    #     while bullet.get_pos_y() + bullet.get_size() >= 0:
+    #         for en in self.get_enemy():
+    #             if en.get_pos_x() <= bullet.get_pos_x() + bullet.get_size() // 2 <= en.get_pos_x() + en.get_width() and en.get_pos_y() + en.get_height() >= bullet.get_pos_y():
+    #                 print(
+    #                     f'Enemy y: {en.get_pos_y() + en.get_height()}, Enemy_x: {en.get_pos_x()} and {en.get_pos_x() + en.get_width()}. Bull_y: {bullet.get_pos_y()} , Bull_x: {bullet.get_pos_x()}')
+    #                 collision = True
+    #                 loc = [en.get_pos_x(), en.get_pos_y()]
+    #                 break
+    #         if collision:
+    #             player.get_bullets().dequeue()
+    #             self.dec_bullet_count()
+    #             self.inc_score()
+    #             self.respawn(loc[0], loc[1])
+    #             time.sleep(1)
+    #             break
+    #         time.sleep(0.002)
+    #         bullet.move_up()
+    #         bullet.draw_bullet(self.get_screen(), bullet.get_pos_x(), bullet.get_pos_y())
 
     def main_loop(self):
-
+        collision = False
         player = self.get_player()
         left_pressed = False
         right_pressed = False
@@ -141,31 +142,40 @@ class MainGame:
                         up_pressed = True
                     elif event.key == pygame.K_DOWN:
                         down_pressed = True
-                    elif event.key == pygame.K_SPACE and player.get_bullets().get_size() <= self.get_max_bullet():
-                        player.create_bullet()
-                        self.inc_bullet_count()
-                        for bullet in player.get_bullets():
-                            if bullet.get_pos_y() + bullet.get_size() <= 0:
-                                self.dec_bullet_count()
-                                if bullet.get_UID() == 1 and thread1:
-                                    thread1.join()
-                                    player.get_bullets().dequeue()
-                                elif bullet.get_UID() == 2 and thread2:
-                                    thread2.join()
-                                    player.get_bullets().dequeue()
-                                elif bullet.get_UID() == 3 and thread3:
-                                    thread3.join()
-                                    player.get_bullets().dequeue()
-                            else:
-                                if bullet.get_UID() == 1:
-                                    thread1 = threading.Thread(target=self.bullet_move, args=[bullet, player])
-                                    thread1.start()
-                                elif bullet.get_UID() == 2:
-                                    thread2 = threading.Thread(target=self.bullet_move, args=[bullet, player])
-                                    thread2.start()
-                                elif bullet.get_UID() == 3:
-                                    thread3 = threading.Thread(target=self.bullet_move, args=[bullet, player])
-                                    thread3.start()
+                    elif event.key == pygame.K_SPACE:
+                        print(f'queue_size{player.get_bullets().get_size()}, max{self.get_max_bullet()}')
+                        if player.get_bullets().get_size() <= self.get_max_bullet():
+                            print('created')
+                            player.create_bullet()
+                            self.inc_bullet_count()
+
+                                # else:
+                                #     print('bullet_draw')
+                                #     bullet.move_up()
+                                #     bullet.draw_bullet(self.get_screen(), bullet.get_pos_x(), bullet.get_pos_y())
+
+                        # for bullet in player.get_bullets():
+                        #     if bullet.get_pos_y() + bullet.get_size() <= 0:
+                        #         self.dec_bullet_count()
+                        #         if bullet.get_UID() == 1 and thread1:
+                        #             thread1.join()
+                        #             player.get_bullets().dequeue()
+                        #         elif bullet.get_UID() == 2 and thread2:
+                        #             thread2.join()
+                        #             player.get_bullets().dequeue()
+                        #         elif bullet.get_UID() == 3 and thread3:
+                        #             thread3.join()
+                        #             player.get_bullets().dequeue()
+                        #     else:
+                        #         if bullet.get_UID() == 1:
+                        #             thread1 = threading.Thread(target=self.bullet_move, args=[bullet, player])
+                        #             thread1.start()
+                        #         elif bullet.get_UID() == 2:
+                        #             thread2 = threading.Thread(target=self.bullet_move, args=[bullet, player])
+                        #             thread2.start()
+                        #         elif bullet.get_UID() == 3:
+                        #             thread3 = threading.Thread(target=self.bullet_move, args=[bullet, player])
+                        #             thread3.start()
 
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_RIGHT:
@@ -186,6 +196,24 @@ class MainGame:
                 player.move_up()
             elif down_pressed and player.get_pos_y() < self.get_screen_height() - player.get_width() - 5:
                 player.move_down()
+
+            for bullet in player.get_bullets():
+                if bullet.get_pos_y() + bullet.get_size() <= 0:
+                    self.dec_bullet_count()
+                    print('dequeue1')
+                    player.get_bullets().dequeue()
+                elif bullet.get_pos_y() + bullet.get_size() > 0:
+                    for en in self.get_enemy():
+                        if en.get_pos_x() <= bullet.get_pos_x() + bullet.get_size() // 2 <= en.get_pos_x() + en.get_width() and en.get_pos_y() + en.get_height() >= bullet.get_pos_y():
+                            print('dequeue2')
+                            player.get_bullets().dequeue()
+                            self.dec_bullet_count()
+                            self.inc_score()
+                            self.respawn(en.get_pos_x(), en.get_pos_y())
+
+                    bullet.move_up()
+                    bullet.draw_bullet(self.get_screen(), bullet.get_pos_x(), bullet.get_pos_y())
+
             self.create_enemy()
             self.display_enemy()
             self.get_player().create_player(self.get_screen())
